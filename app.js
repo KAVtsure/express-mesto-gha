@@ -25,6 +25,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(express.json());
+
 app.use(routes);
 app.use('*', (req, res) => {
   res.status(DATA_NOT_FOUND).send({ message: 'Запрашиваемая страница не найдена' });
