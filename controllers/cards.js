@@ -41,12 +41,12 @@ const deleteCard = async (req, res, next) => {
       next(new NotFoundError('Карточка с указанным _id не найдена'));
       return;
     }
-    if (card.owner !== req.user._id) {
+    if (card.owner.toString() !== req.user._id) {
       next(new CardDeleteError('Невозможно удалить чужую карточку'));
       return;
     }
     await Card.deleteOne(card);
-    res.status(RES_OK).send(card);
+    res.status(RES_OK).send({ message: 'Карточка успешно удалена' });
   } catch (e) {
     if (e.name === 'CastError') {
       next(new IncorrectReqDataError('Невалидный ID карточки'));
