@@ -5,6 +5,10 @@ const auth = (req, res, next) => {
   const token = req.cookies.jwt;
   let payload;
   try {
+    if (!token) {
+      next(new AuthError('Передан неверный JWT'));
+      return;
+    }
     payload = jwt.verify(token, 'incredibly-secure-key');
   } catch (e) {
     next(new AuthError('Передан неверный JWT'));
@@ -14,4 +18,4 @@ const auth = (req, res, next) => {
   next();
 };
 
-module.exports = auth;
+module.exports = { auth };
