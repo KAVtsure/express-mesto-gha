@@ -1,9 +1,10 @@
 const Card = require('../models/card');
-const {
-  INCORRECT_REQ_DATA, DATA_NOT_FOUND, ERROR_SERVER, RES_OK,
-} = require('../utils/codes');
+const IncorrectReqDataError = require('../utils/IncorrectReqDataError');
+const ServerError = require('../utils/ServerError');
+const NotFoundError = require('../utils/NotFoundError');
+const { RES_OK } = require('../utils/codes');
 
-const createCard = async (req, res) => {
+const createCard = async (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   try {
@@ -11,45 +12,49 @@ const createCard = async (req, res) => {
     res.status(RES_OK).send(card);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(INCORRECT_REQ_DATA).send({ message: 'Переданы некорректные данные при создании карточки' });
+      next(new IncorrectReqDataError('Переданы некорректные данные при создании карточки'));
     } else {
-      res.status(ERROR_SERVER).send({ message: 'Ошибка по умолчанию' });
+      next(new ServerError('Ошибка по умолчанию'));
     }
   }
 };
 
-const getCard = async (req, res) => {
+const getCard = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     res.status(RES_OK).send(cards);
   } catch (e) {
     if (e.kind === 'ObjectId') {
-      res.status(INCORRECT_REQ_DATA).send({ message: 'Переданы некорректные данные при создании карточки' });
+      next(new IncorrectReqDataError('Переданы некорректные данные при создании карточки'));
     } else {
-      res.status(ERROR_SERVER).send({ message: 'Ошибка по умолчанию' });
+      next(new ServerError('Ошибка по умолчанию'));
     }
   }
 };
 
-const deleteCard = async (req, res) => {
+const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
   try {
     const card = await Card.findByIdAndDelete(cardId);
     if (!card) {
-      res.status(DATA_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
+      next(new NotFoundError('Карточка с указанным _id не найдена'));
+      return;
+    }
+    if (req.user._id !== card.owner) {
+      next(new NotFoundError('Невозможно удалить чужую карточку'));
       return;
     }
     res.status(RES_OK).send(card);
   } catch (e) {
     if (e.name === 'CastError') {
-      res.status(INCORRECT_REQ_DATA).send({ message: 'Невалидный ID карточки' });
+      next(new IncorrectReqDataError('Невалидный ID карточки'));
     } else {
-      res.status(ERROR_SERVER).send({ message: 'Ошибка по умолчанию' });
+      next(new ServerError('Ошибка по умолчанию'));
     }
   }
 };
 
-const likeCard = async (req, res) => {
+const likeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -57,20 +62,20 @@ const likeCard = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res.status(DATA_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+      next(new NotFoundError('Передан несуществующий _id карточки'));
       return;
     }
     res.status(RES_OK).send(card);
   } catch (e) {
     if (e.name === 'CastError') {
-      res.status(INCORRECT_REQ_DATA).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
+      next(new IncorrectReqDataError('Переданы некорректные данные для постановки/снятии лайка'));
     } else {
-      res.status(ERROR_SERVER).send({ message: 'Ошибка по умолчанию' });
+      next(new ServerError('Ошибка по умолчанию'));
     }
   }
 };
 
-const dislikeCard = async (req, res) => {
+const dislikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -78,15 +83,15 @@ const dislikeCard = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res.status(DATA_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+      next(new NotFoundError('Передан несуществующий _id карточки'));
       return;
     }
     res.status(RES_OK).send(card);
   } catch (e) {
     if (e.name === 'CastError') {
-      res.status(INCORRECT_REQ_DATA).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
+      next(new IncorrectReqDataError('Переданы некорректные данные для постановки/снятии лайка'));
     } else {
-      res.status(ERROR_SERVER).send({ message: 'Ошибка по умолчанию' });
+      next(new ServerError('Ошибка по умолчанию'));
     }
   }
 };

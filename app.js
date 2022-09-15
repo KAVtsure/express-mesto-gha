@@ -1,7 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const { routes } = require('./routes/index');
 const { DATA_NOT_FOUND } = require('./utils/codes');
+const { createUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+const errorHandler = require('./middlewares/error');
+const { loginValidate, createUserValidate } = require('./middlewares/validation');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -17,17 +23,21 @@ async function main() {
 
 main();
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6309eef45fa59239e3ae8452',
-  };
-
-  next();
-});
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.post('/signup', createUserValidate, createUser);
+app.post('/signin', loginValidate, login);
+
+app.use(auth);
 
 app.use(routes);
-app.use('*', (req, res) => {
+
+app.use(errors()); // обработчик ошибок celebrate
+app.use(errorHandler);
+
+app.use('*', (req, res, next) => {
   res.status(DATA_NOT_FOUND).send({ message: 'Запрашиваемая страница не найдена' });
+  next();
 });
