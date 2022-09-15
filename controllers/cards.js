@@ -2,6 +2,7 @@ const Card = require('../models/card');
 const IncorrectReqDataError = require('../utils/IncorrectReqDataError');
 const ServerError = require('../utils/ServerError');
 const NotFoundError = require('../utils/NotFoundError');
+const CardDeleteError = require('../utils/CardDeleteError');
 const { RES_OK } = require('../utils/codes');
 
 const createCard = async (req, res, next) => {
@@ -35,15 +36,16 @@ const getCard = async (req, res, next) => {
 const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
   try {
-    const card = await Card.findByIdAndDelete(cardId);
+    const card = await Card.findById(cardId);
     if (!card) {
       next(new NotFoundError('Карточка с указанным _id не найдена'));
       return;
     }
     if (req.user._id !== card.owner) {
-      next(new NotFoundError('Невозможно удалить чужую карточку'));
+      next(new CardDeleteError('Невозможно удалить чужую карточку'));
       return;
     }
+    await Card.findOneAndDelete(card);
     res.status(RES_OK).send(card);
   } catch (e) {
     if (e.name === 'CastError') {
