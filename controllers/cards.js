@@ -45,7 +45,7 @@ const deleteCard = async (req, res, next) => {
       next(new CardDeleteError('Невозможно удалить чужую карточку'));
       return;
     }
-    await Card.findOneAndDelete(card);
+    await Card.deleteOne(card);
     res.status(RES_OK).send(card);
   } catch (e) {
     if (e.name === 'CastError') {
