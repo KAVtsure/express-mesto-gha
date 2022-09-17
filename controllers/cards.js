@@ -25,11 +25,7 @@ const getCard = async (req, res, next) => {
     const cards = await Card.find({});
     res.status(RES_OK).send(cards);
   } catch (e) {
-    if (e.kind === 'ObjectId') {
-      next(new IncorrectReqDataError('Переданы некорректные данные при создании карточки'));
-    } else {
-      next(new ServerError('Ошибка по умолчанию'));
-    }
+    next(new ServerError('Ошибка по умолчанию'));
   }
 };
 

@@ -3,14 +3,14 @@ const { celebrate, Joi } = require('celebrate');
 const loginValidate = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
   }),
 });
 
 const createUserValidate = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     // eslint-disable-next-line no-useless-escape
     avatar: Joi.string().pattern(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?#?$/),
@@ -34,7 +34,7 @@ const updateAvatarValidate = celebrate({
 
 const getUserByIdValidate = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required().min(24).max(24),
+    userId: Joi.string().required().hex().length(24),
   }),
 });
 
@@ -48,13 +48,13 @@ const createCardValidate = celebrate({
 
 const deleteCarddValidate = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required().min(24).max(24),
+    cardId: Joi.string().required().hex().length(24),
   }),
 });
 
 const rateCarddValidate = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required().min(24).max(24),
+    cardId: Joi.string().required().hex().length(24),
   }),
 });
 

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const { routes } = require('./routes/index');
-const { DATA_NOT_FOUND } = require('./utils/codes');
+const NotFoundError = require('./utils/NotFoundError');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error');
@@ -34,10 +34,9 @@ app.use(auth);
 
 app.use(routes);
 
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемая страница не найдена'));
+});
+
 app.use(errors()); // обработчик ошибок celebrate
 app.use(errorHandler);
-
-app.use('*', (req, res, next) => {
-  res.status(DATA_NOT_FOUND).send({ message: 'Запрашиваемая страница не найдена' });
-  next();
-});

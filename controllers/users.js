@@ -36,11 +36,7 @@ const getUser = async (req, res, next) => {
     const users = await User.find({});
     res.status(RES_OK).send(users);
   } catch (e) {
-    if (e.kind === 'ObjectId') {
-      next(new IncorrectReqDataError('Переданы некорректные данные при создании пользователя'));
-    } else {
-      next(new ServerError('Ошибка по умолчанию'));
-    }
+    next(new ServerError('Ошибка по умолчанию'));
   }
 };
 
