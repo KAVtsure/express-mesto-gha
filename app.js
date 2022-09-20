@@ -8,6 +8,7 @@ const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error');
 const { loginValidate, createUserValidate } = require('./middlewares/validation');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -27,6 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use(requestLogger); // подключаем логгер запросов
+
 app.post('/signup', createUserValidate, createUser);
 app.post('/signin', loginValidate, login);
 
@@ -37,6 +40,8 @@ app.use(routes);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемая страница не найдена'));
 });
+
+app.use(errorLogger); // подключаем логгер ошибок
 
 app.use(errors()); // обработчик ошибок celebrate
 app.use(errorHandler);
